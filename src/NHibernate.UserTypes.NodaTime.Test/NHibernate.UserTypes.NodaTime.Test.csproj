@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="autofixture" Version="4.11.0" />
+    <PackageReference Include="autofixture.xunit2" Version="4.11.0" />
+    <PackageReference Include="fluentassertions" Version="5.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
+    <PackageReference Include="nhibernate" Version="5.2.6" />
+    <PackageReference Include="nodatime" Version="2.4.7" />
+    <PackageReference Include="system.data.sqlclient" Version="4.7.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    <PackageReference Include="coverlet.collector" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NHibernate.UserTypes.NodaTime\NHibernate.UserTypes.NodaTime.csproj" />
+  </ItemGroup>
+
+</Project>
