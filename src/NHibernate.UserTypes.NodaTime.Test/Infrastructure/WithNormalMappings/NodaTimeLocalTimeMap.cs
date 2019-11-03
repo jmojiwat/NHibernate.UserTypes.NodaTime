@@ -11,26 +11,11 @@ namespace NHibernate.UserTypes.NodaTime.Test.Infrastructure.WithNormalMappings
 
             Id(p => p.Id, m => m.Generator(Generators.HighLow));
 
-            Property(p => p.LocalTime, 
-                m =>
-                {
-                    m.Column(cm => cm.Name("LocalTime"));
-                    m.Type<NodaTimeLocalTimeUserType>();
-                });
+            Property(p => p.LocalTime, m => m.Type<NodaTimeLocalTimeUserType>());
 
-            Property(p => p.NullableLocalTime, 
-                m =>
-                {
-                    m.Column(cm => cm.Name("NullableLocalTime"));
-                    m.Type<NodaTimeLocalTimeUserType>();
-                });
+            Property(p => p.NullableLocalTime, m => m.Type<NodaTimeLocalTimeUserType>());
 
-            Property(p => p.NullableLocalTimeWithNull, 
-                m =>
-                {
-                    m.Column(cm => cm.Name("NullableLocalTimeWithNull"));
-                    m.Type<NodaTimeLocalTimeUserType>();
-                });
+            Property(p => p.NullableLocalTimeWithNull, m => m.Type<NodaTimeLocalTimeUserType>());
         }
     }
 }

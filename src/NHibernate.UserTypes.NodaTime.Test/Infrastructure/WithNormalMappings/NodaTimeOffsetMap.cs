@@ -11,26 +11,11 @@ namespace NHibernate.UserTypes.NodaTime.Test.Infrastructure.WithNormalMappings
 
             Id(p => p.Id, m => m.Generator(Generators.HighLow));
 
-            Property(p => p.Offset, 
-                m =>
-                {
-                    m.Column(cm => cm.Name("Offset"));
-                    m.Type<NodaTimeOffsetUserType>();
-                });
+            Property(p => p.Offset, m => m.Type<NodaTimeOffsetUserType>());
 
-            Property(p => p.NullableOffset, 
-                m =>
-                {
-                    m.Column(cm => cm.Name("NullableOffset"));
-                    m.Type<NodaTimeOffsetUserType>();
-                });
+            Property(p => p.NullableOffset, m => m.Type<NodaTimeOffsetUserType>());
 
-            Property(p => p.NullableOffsetWithNull, 
-                m =>
-                {
-                    m.Column(cm => cm.Name("NullableOffsetWithNull"));
-                    m.Type<NodaTimeOffsetUserType>();
-                });
+            Property(p => p.NullableOffsetWithNull, m => m.Type<NodaTimeOffsetUserType>());
        }
     }
 }

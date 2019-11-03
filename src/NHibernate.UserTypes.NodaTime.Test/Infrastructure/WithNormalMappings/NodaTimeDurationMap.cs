@@ -12,25 +12,13 @@ namespace NHibernate.UserTypes.NodaTime.Test.Infrastructure.WithNormalMappings
             Id(p => p.Id, m => m.Generator(Generators.HighLow));
 
             Property(p => p.Duration, 
-                m =>
-                {
-                    m.Column(cm => cm.Name("Duration"));
-                    m.Type<NodaTimeDurationUserType>();
-                });
+                m => m.Type<NodaTimeDurationUserType>());
 
             Property(p => p.NullableDuration, 
-                m =>
-                {
-                    m.Column(cm => cm.Name("NullableDuration"));
-                    m.Type<NodaTimeDurationUserType>();
-                });
+                m => m.Type<NodaTimeDurationUserType>());
 
             Property(p => p.NullableDurationWithNull, 
-                m =>
-                {
-                    m.Column(cm => cm.Name("NullableDurationWithNull"));
-                    m.Type<NodaTimeDurationUserType>();
-                });
+                m => m.Type<NodaTimeDurationUserType>());
         }
     }
 }
