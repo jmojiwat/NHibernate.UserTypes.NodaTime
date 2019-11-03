@@ -6,69 +6,71 @@ using NHibernate.UserTypes.NodaTime.Test.Infrastructure;
 using NodaTime;
 using Xunit;
 
-namespace NHibernate.UserTypes.NodaTime.Test
+namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class NodaTimeDateIntervalTest : IClassFixture<DatabaseFixture>
+    [Collection("Database collection")]
+    public class NodaTimeOffsetTimeTest
     {
         private readonly ISessionFactory sessionFactory;
 
-        public NodaTimeDateIntervalTest(DatabaseFixture databaseFixture)
+        public NodaTimeOffsetTimeTest(DatabaseFixture databaseFixture)
         {
             sessionFactory = databaseFixture.SessionFactory;
         }
 
         [Theory, NodaTimeAutoData]
-        public void DateInterval_returns_expected_results(NodaTimeDateInterval time)
+        public void NullableOffsetTime_returns_expected_results(NodaTimeOffsetTime time)
         {
             PopulateDatabase(sessionFactory, time);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeDateInterval>(time.Id);
+                var sut = session.Load<NodaTimeOffsetTime>(time.Id);
 
-                sut.DateInterval.Should().BeEquivalentTo(time.DateInterval);
+                sut.NullableOffsetTime.Should().BeEquivalentTo(time.NullableOffsetTime);
             }
 
             CleanDatabase(sessionFactory);
         }
 
         [Theory, NodaTimeAutoData]
-        public void NullableDateInterval_returns_expected_results(NodaTimeDateInterval time)
+        public void NullableOffsetTimeWithNull_returns_expected_results(NodaTimeOffsetTime time)
         {
             PopulateDatabase(sessionFactory, time);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeDateInterval>(time.Id);
+                var sut = session.Load<NodaTimeOffsetTime>(time.Id);
 
-                sut.NullableDateInterval.Should().BeEquivalentTo(time.NullableDateInterval);
+                sut.NullableOffsetTimeWithNull.Should().BeEquivalentTo(time.NullableOffsetTimeWithNull);
             }
 
             CleanDatabase(sessionFactory);
         }
 
         [Theory, NodaTimeAutoData]
-        public void NullableDateIntervalWithNull_returns_expected_results(NodaTimeDateInterval time)
+        public void OffsetTime_returns_expected_results(NodaTimeOffsetTime time)
         {
             PopulateDatabase(sessionFactory, time);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeDateInterval>(time.Id);
+                var sut = session.Load<NodaTimeOffsetTime>(time.Id);
 
-                sut.NullableDateIntervalWithNull.Should().BeEquivalentTo(time.NullableDateIntervalWithNull);
+                sut.OffsetTime.Should().BeEquivalentTo(time.OffsetTime);
             }
 
             CleanDatabase(sessionFactory);
         }
+
         private static void CleanDatabase(ISessionFactory sessionFactory)
         {
             using var session = sessionFactory.OpenSession();
-            session.Query<NodaTimeDateInterval>().Delete();
+            session.Query<NodaTimeOffsetTime>().Delete();
             session.Flush();
         }
 
-        private static void PopulateDatabase(ISessionFactory sessionFactory, NodaTimeDateInterval time)
+        private static void PopulateDatabase(ISessionFactory sessionFactory, NodaTimeOffsetTime time)
         {
             using var session = sessionFactory.OpenSession();
             session.Save(time);
@@ -86,11 +88,11 @@ namespace NHibernate.UserTypes.NodaTime.Test
         {
             public void Customize(IFixture fixture)
             {
-                fixture.Register(() => new NodaTimeDateInterval
+                fixture.Register(() => new NodaTimeOffsetTime
                 {
-                    DateInterval = new DateInterval(new LocalDate(2018, 1, 2), new LocalDate(2019, 3, 4)),
-                    NullableDateInterval = new DateInterval(new LocalDate(2018, 1, 2), new LocalDate(2019, 3, 4)),
-                    NullableDateIntervalWithNull = null,
+                    OffsetTime = new OffsetTime(new LocalTime(7, 8, 9), Offset.FromHours(1)),
+                    NullableOffsetTime = new OffsetTime(new LocalTime(8, 9, 10), Offset.FromHours(2)),
+                    NullableOffsetTimeWithNull = null
                 });
             }
         }

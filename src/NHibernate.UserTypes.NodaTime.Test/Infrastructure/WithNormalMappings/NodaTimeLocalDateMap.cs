@@ -1,7 +1,7 @@
 ﻿using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
 
-namespace NHibernate.UserTypes.NodaTime.Test.Infrastructure
+namespace NHibernate.UserTypes.NodaTime.Test.Infrastructure.WithNormalMappings
 {
     public class NodaTimeLocalDateMap : ClassMapping<NodaTimeLocalDate>
     {

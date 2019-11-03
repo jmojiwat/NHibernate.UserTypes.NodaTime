@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
@@ -6,15 +7,17 @@ using NHibernate.Driver;
 using NHibernate.Mapping.ByCode;
 using NHibernate.Tool.hbm2ddl;
 
-namespace NHibernate.UserTypes.NodaTime.Test
+namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class DatabaseFixture
+    public class DatabaseFixture : IDisposable
     {
         public ISessionFactory SessionFactory { get; }
 
         public DatabaseFixture()
         {
-            var types = Assembly.Load("NHibernate.UserTypes.NodaTime.Test").GetExportedTypes();
+            var types = Assembly.Load("NHibernate.UserTypes.NodaTime.Test").GetExportedTypes()
+                .Where(t => t.Namespace != null && t.Namespace.StartsWith("NHibernate.UserTypes.NodaTime.Test.Infrastructure.WithNormalMappings"));
+
             var mapper = new ModelMapper();
             mapper.AddMappings(types);
             var hbmMapping = mapper.CompileMappingForAllExplicitlyAddedEntities();
@@ -54,6 +57,11 @@ namespace NHibernate.UserTypes.NodaTime.Test
 
             configuration.SessionFactory().GenerateStatistics();
             return configuration;
+        }
+
+        public void Dispose()
+        {
+            SessionFactory?.Dispose();
         }
     }
 }

@@ -6,57 +6,56 @@ using NHibernate.UserTypes.NodaTime.Test.Infrastructure;
 using NodaTime;
 using Xunit;
 
-namespace NHibernate.UserTypes.NodaTime.Test
+namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class NodaTimeZonedDateTimeTest : IClassFixture<DatabaseFixture>
+    [Collection("Database collection")]
+    public class NodaTimeAnnualDateTest
     {
         private readonly ISessionFactory sessionFactory;
 
-        public NodaTimeZonedDateTimeTest(DatabaseFixture databaseFixture)
+        public NodaTimeAnnualDateTest(DatabaseFixture databaseFixture)
         {
             sessionFactory = databaseFixture.SessionFactory;
         }
 
         [Theory, NodaTimeAutoData]
-        public void ZonedDateTime_returns_expected_results(NodaTimeZonedDateTime nodaTime)
+        public void AnnualDate_returns_expected_results(NodaTimeAnnualDate nodaTime)
+        {
+            PopulateDatabase(sessionFactory, nodaTime);
+
+            using var session = sessionFactory.OpenSession();
+            var sut = session.Load<NodaTimeAnnualDate>(nodaTime.Id);
+
+            sut.AnnualDate.Should().BeEquivalentTo(nodaTime.AnnualDate);
+
+            CleanDatabase(sessionFactory);
+        }
+
+        [Theory, NodaTimeAutoData]
+        public void NullableAnnualDate_returns_expected_results(NodaTimeAnnualDate nodaTime)
         {
             PopulateDatabase(sessionFactory, nodaTime);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeZonedDateTime>(nodaTime.Id);
+                var sut = session.Load<NodaTimeAnnualDate>(nodaTime.Id);
 
-                sut.ZonedDateTime.Should().BeEquivalentTo(nodaTime.ZonedDateTime);
+                sut.NullableAnnualDate.Should().BeEquivalentTo(nodaTime.NullableAnnualDate);
             }
 
             CleanDatabase(sessionFactory);
         }
 
         [Theory, NodaTimeAutoData]
-        public void NullableZonedDateTime_returns_expected_results(NodaTimeZonedDateTime nodaTime)
+        public void NullableAnnualDateWithNull_returns_expected_results(NodaTimeAnnualDate nodaTime)
         {
             PopulateDatabase(sessionFactory, nodaTime);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeZonedDateTime>(nodaTime.Id);
+                var sut = session.Load<NodaTimeAnnualDate>(nodaTime.Id);
 
-                sut.NullableZonedDateTime.Should().BeEquivalentTo(nodaTime.NullableZonedDateTime);
-            }
-
-            CleanDatabase(sessionFactory);
-        }
-
-        [Theory, NodaTimeAutoData]
-        public void NullableZonedDateTimeWithNull_returns_expected_results(NodaTimeZonedDateTime nodaTime)
-        {
-            PopulateDatabase(sessionFactory, nodaTime);
-
-            using (var session = sessionFactory.OpenSession())
-            {
-                var sut = session.Load<NodaTimeZonedDateTime>(nodaTime.Id);
-
-                sut.NullableZonedDateTimeWithNull.Should().BeEquivalentTo(nodaTime.NullableZonedDateTimeWithNull);
+                sut.NullableAnnualDateWithNull.Should().BeEquivalentTo(nodaTime.NullableAnnualDateWithNull);
             }
 
             CleanDatabase(sessionFactory);
@@ -65,11 +64,11 @@ namespace NHibernate.UserTypes.NodaTime.Test
         private static void CleanDatabase(ISessionFactory sessionFactory)
         {
             using var session = sessionFactory.OpenSession();
-            session.Query<NodaTimeZonedDateTime>().Delete();
+            session.Query<NodaTimeAnnualDate>().Delete();
             session.Flush();
         }
 
-        private static void PopulateDatabase(ISessionFactory sessionFactory, NodaTimeZonedDateTime nodaTime)
+        private static void PopulateDatabase(ISessionFactory sessionFactory, NodaTimeAnnualDate nodaTime)
         {
             using var session = sessionFactory.OpenSession();
             session.Save(nodaTime);
@@ -87,11 +86,11 @@ namespace NHibernate.UserTypes.NodaTime.Test
         {
             public void Customize(IFixture fixture)
             {
-                fixture.Register(() => new NodaTimeZonedDateTime
+                fixture.Register(() => new NodaTimeAnnualDate
                 {
-                    ZonedDateTime = new ZonedDateTime(new LocalDateTime(2015, 9, 10, 7, 8, 9).InUtc().ToInstant(), DateTimeZone.Utc),
-                    NullableZonedDateTime = new ZonedDateTime(new LocalDateTime(2015, 9, 10, 7, 8, 9).InUtc().ToInstant(), DateTimeZone.Utc),
-                    NullableZonedDateTimeWithNull = null,
+                    AnnualDate = new AnnualDate(1, 2),
+                    NullableAnnualDate = new AnnualDate(3, 4),
+                    NullableAnnualDateWithNull = null
                 });
             }
         }

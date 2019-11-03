@@ -6,9 +6,10 @@ using NHibernate.UserTypes.NodaTime.Test.Infrastructure;
 using NodaTime;
 using Xunit;
 
-namespace NHibernate.UserTypes.NodaTime.Test
+namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class NodaTimeIntervalTest : IClassFixture<DatabaseFixture>
+    [Collection("Database collection")]
+    public class NodaTimeIntervalTest
     {
         private readonly ISessionFactory sessionFactory;
 
@@ -33,21 +34,6 @@ namespace NHibernate.UserTypes.NodaTime.Test
         }
 
         [Theory, NodaTimeAutoData]
-        public void IntervalWithNullStart_returns_expected_results(NodaTimeInterval nodaTime)
-        {
-            PopulateDatabase(sessionFactory, nodaTime);
-
-            using (var session = sessionFactory.OpenSession())
-            {
-                var sut = session.Load<NodaTimeInterval>(nodaTime.Id);
-
-                sut.IntervalWithNullStart.Should().BeEquivalentTo(nodaTime.IntervalWithNullStart);
-            }
-
-            CleanDatabase(sessionFactory);
-        }
-
-        [Theory, NodaTimeAutoData]
         public void IntervalWithNullEnd_returns_expected_results(NodaTimeInterval nodaTime)
         {
             PopulateDatabase(sessionFactory, nodaTime);
@@ -57,6 +43,21 @@ namespace NHibernate.UserTypes.NodaTime.Test
                 var sut = session.Load<NodaTimeInterval>(nodaTime.Id);
 
                 sut.IntervalWithNullEnd.Should().BeEquivalentTo(nodaTime.IntervalWithNullEnd);
+            }
+
+            CleanDatabase(sessionFactory);
+        }
+
+        [Theory, NodaTimeAutoData]
+        public void IntervalWithNullStart_returns_expected_results(NodaTimeInterval nodaTime)
+        {
+            PopulateDatabase(sessionFactory, nodaTime);
+
+            using (var session = sessionFactory.OpenSession())
+            {
+                var sut = session.Load<NodaTimeInterval>(nodaTime.Id);
+
+                sut.IntervalWithNullStart.Should().BeEquivalentTo(nodaTime.IntervalWithNullStart);
             }
 
             CleanDatabase(sessionFactory);
@@ -106,7 +107,7 @@ namespace NHibernate.UserTypes.NodaTime.Test
 
             CleanDatabase(sessionFactory);
         }
-        
+
         private static void CleanDatabase(ISessionFactory sessionFactory)
         {
             using var session = sessionFactory.OpenSession();
@@ -134,7 +135,7 @@ namespace NHibernate.UserTypes.NodaTime.Test
             {
                 var instant1 = Instant.FromUtc(2016, 5, 6, 1, 2, 3);
                 var instant2 = Instant.FromUtc(2017, 7, 8, 4, 5, 6);
-                
+
                 fixture.Register(() => new NodaTimeInterval
                 {
                     Interval = new Interval(instant1, instant2),
@@ -142,7 +143,7 @@ namespace NHibernate.UserTypes.NodaTime.Test
                     IntervalWithNullEnd = new Interval(instant1, null),
                     IntervalWithNullStartEnd = new Interval(null, null),
                     NullableInterval = new Interval(instant1, instant2),
-                    NullableIntervalWithNull = null,
+                    NullableIntervalWithNull = null
                 });
             }
         }

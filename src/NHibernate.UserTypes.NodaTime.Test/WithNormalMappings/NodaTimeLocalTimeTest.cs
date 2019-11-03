@@ -6,57 +6,58 @@ using NHibernate.UserTypes.NodaTime.Test.Infrastructure;
 using NodaTime;
 using Xunit;
 
-namespace NHibernate.UserTypes.NodaTime.Test
+namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class NodaTimeLocalDateTimeTest : IClassFixture<DatabaseFixture>
+    [Collection("Database collection")]
+    public class NodaTimeLocalTimeTest
     {
         private readonly ISessionFactory sessionFactory;
 
-        public NodaTimeLocalDateTimeTest(DatabaseFixture databaseFixture)
+        public NodaTimeLocalTimeTest(DatabaseFixture databaseFixture)
         {
             sessionFactory = databaseFixture.SessionFactory;
         }
 
         [Theory, NodaTimeAutoData]
-        public void LocalDateTime_returns_expected_results(NodaTimeLocalDateTime nodaTime)
+        public void LocalTime_returns_expected_results(NodaTimeLocalTime nodaTime)
         {
             PopulateDatabase(sessionFactory, nodaTime);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeLocalDateTime>(nodaTime.Id);
+                var sut = session.Load<NodaTimeLocalTime>(nodaTime.Id);
 
-                sut.LocalDateTime.Should().BeEquivalentTo(nodaTime.LocalDateTime);
+                sut.LocalTime.Should().BeEquivalentTo(nodaTime.LocalTime);
             }
 
             CleanDatabase(sessionFactory);
         }
 
         [Theory, NodaTimeAutoData]
-        public void NullableLocalDateTime_returns_expected_results(NodaTimeLocalDateTime nodaTime)
+        public void NullableLocalTime_returns_expected_results(NodaTimeLocalTime nodaTime)
         {
             PopulateDatabase(sessionFactory, nodaTime);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeLocalDateTime>(nodaTime.Id);
+                var sut = session.Load<NodaTimeLocalTime>(nodaTime.Id);
 
-                sut.NullableLocalDateTime.Should().BeEquivalentTo(nodaTime.NullableLocalDateTime);
+                sut.NullableLocalTime.Should().BeEquivalentTo(nodaTime.NullableLocalTime);
             }
 
             CleanDatabase(sessionFactory);
         }
 
         [Theory, NodaTimeAutoData]
-        public void NullableLocalDateTimeWithNull_returns_expected_results(NodaTimeLocalDateTime nodaTime)
+        public void NullableLocalTimeWithNull_returns_expected_results(NodaTimeLocalTime nodaTime)
         {
             PopulateDatabase(sessionFactory, nodaTime);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeLocalDateTime>(nodaTime.Id);
+                var sut = session.Load<NodaTimeLocalTime>(nodaTime.Id);
 
-                sut.NullableLocalDateTimeWithNull.Should().BeEquivalentTo(nodaTime.NullableLocalDateTimeWithNull);
+                sut.NullableLocalTimeWithNull.Should().BeEquivalentTo(nodaTime.NullableLocalTimeWithNull);
             }
 
             CleanDatabase(sessionFactory);
@@ -65,11 +66,11 @@ namespace NHibernate.UserTypes.NodaTime.Test
         private static void CleanDatabase(ISessionFactory sessionFactory)
         {
             using var session = sessionFactory.OpenSession();
-            session.Query<NodaTimeLocalDateTime>().Delete();
+            session.Query<NodaTimeLocalTime>().Delete();
             session.Flush();
         }
 
-        private static void PopulateDatabase(ISessionFactory sessionFactory, NodaTimeLocalDateTime nodaTime)
+        private static void PopulateDatabase(ISessionFactory sessionFactory, NodaTimeLocalTime nodaTime)
         {
             using var session = sessionFactory.OpenSession();
             session.Save(nodaTime);
@@ -87,11 +88,14 @@ namespace NHibernate.UserTypes.NodaTime.Test
         {
             public void Customize(IFixture fixture)
             {
-                fixture.Register(() => new NodaTimeLocalDateTime
+                var instant1 = Instant.FromUtc(2016, 5, 6, 1, 2, 3);
+                var instant2 = Instant.FromUtc(2017, 7, 8, 4, 5, 6);
+
+                fixture.Register(() => new NodaTimeLocalTime
                 {
-                    LocalDateTime = new LocalDateTime(2015, 9, 10, 7, 8, 9),
-                    NullableLocalDateTime = new LocalDateTime(2014, 11, 12, 10, 11, 12),
-                    NullableLocalDateTimeWithNull = null,
+                    LocalTime = new LocalTime(7, 8, 9),
+                    NullableLocalTime = new LocalTime(10, 11, 12),
+                    NullableLocalTimeWithNull = null
                 });
             }
         }

@@ -6,9 +6,10 @@ using NHibernate.UserTypes.NodaTime.Test.Infrastructure;
 using NodaTime;
 using Xunit;
 
-namespace NHibernate.UserTypes.NodaTime.Test
+namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class NodaTimeInstantTest : IClassFixture<DatabaseFixture>
+    [Collection("Database collection")]
+    public class NodaTimeInstantTest
     {
         private readonly ISessionFactory sessionFactory;
 
@@ -89,7 +90,7 @@ namespace NHibernate.UserTypes.NodaTime.Test
             {
                 var instant1 = Instant.FromUtc(2016, 5, 6, 1, 2, 3);
                 var instant2 = Instant.FromUtc(2017, 7, 8, 4, 5, 6);
-                
+
                 fixture.Register(() => new NodaTimeInstant
                 {
                     Instant = instant1,

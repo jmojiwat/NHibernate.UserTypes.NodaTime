@@ -1,7 +1,7 @@
 ﻿using NHibernate.Mapping.ByCode;
 using NHibernate.Mapping.ByCode.Conformist;
 
-namespace NHibernate.UserTypes.NodaTime.Test.Infrastructure
+namespace NHibernate.UserTypes.NodaTime.Test.Infrastructure.WithNormalMappings
 {
     public class NodaTimeAnnualDateMap : ClassMapping<NodaTimeAnnualDate>
     {
@@ -38,5 +38,6 @@ namespace NHibernate.UserTypes.NodaTime.Test.Infrastructure
                     m.Type<NodaTimeAnnualDateUserType>();
                 });
         }
+
     }
 }

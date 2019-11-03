@@ -6,9 +6,10 @@ using NHibernate.UserTypes.NodaTime.Test.Infrastructure;
 using NodaTime;
 using Xunit;
 
-namespace NHibernate.UserTypes.NodaTime.Test
+namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class NodaTimeLocalDateTest : IClassFixture<DatabaseFixture>
+    [Collection("Database collection")]
+    public class NodaTimeLocalDateTest
     {
         private readonly ISessionFactory sessionFactory;
 
@@ -61,6 +62,7 @@ namespace NHibernate.UserTypes.NodaTime.Test
 
             CleanDatabase(sessionFactory);
         }
+
         private static void CleanDatabase(ISessionFactory sessionFactory)
         {
             using var session = sessionFactory.OpenSession();
@@ -90,7 +92,7 @@ namespace NHibernate.UserTypes.NodaTime.Test
                 {
                     LocalDate = new LocalDate(2014, 11, 12),
                     NullableLocalDate = new LocalDate(2013, 12, 13),
-                    NullableLocalDateWithNull = null,
+                    NullableLocalDateWithNull = null
                 });
             }
         }

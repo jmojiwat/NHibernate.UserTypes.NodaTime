@@ -6,30 +6,16 @@ using NHibernate.UserTypes.NodaTime.Test.Infrastructure;
 using NodaTime;
 using Xunit;
 
-namespace NHibernate.UserTypes.NodaTime.Test
+namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class NodaTimePeriodTest : IClassFixture<DatabaseFixture>
+    [Collection("Database collection")]
+    public class NodaTimePeriodTest
     {
         private readonly ISessionFactory sessionFactory;
 
         public NodaTimePeriodTest(DatabaseFixture databaseFixture)
         {
             sessionFactory = databaseFixture.SessionFactory;
-        }
-
-        [Theory, NodaTimeAutoData]
-        public void Period_returns_expected_results(NodaTimePeriod nodaTime)
-        {
-            PopulateDatabase(sessionFactory, nodaTime);
-
-            using (var session = sessionFactory.OpenSession())
-            {
-                var sut = session.Load<NodaTimePeriod>(nodaTime.Id);
-
-                sut.Period.Should().BeEquivalentTo(nodaTime.Period);
-            }
-
-            CleanDatabase(sessionFactory);
         }
 
         [Theory, NodaTimeAutoData]
@@ -57,6 +43,21 @@ namespace NHibernate.UserTypes.NodaTime.Test
                 var sut = session.Load<NodaTimePeriod>(nodaTime.Id);
 
                 sut.NullablePeriodWithNull.Should().BeEquivalentTo(nodaTime.NullablePeriodWithNull);
+            }
+
+            CleanDatabase(sessionFactory);
+        }
+
+        [Theory, NodaTimeAutoData]
+        public void Period_returns_expected_results(NodaTimePeriod nodaTime)
+        {
+            PopulateDatabase(sessionFactory, nodaTime);
+
+            using (var session = sessionFactory.OpenSession())
+            {
+                var sut = session.Load<NodaTimePeriod>(nodaTime.Id);
+
+                sut.Period.Should().BeEquivalentTo(nodaTime.Period);
             }
 
             CleanDatabase(sessionFactory);
@@ -115,7 +116,7 @@ namespace NHibernate.UserTypes.NodaTime.Test
                         Weeks = 2,
                         Years = 1
                     }.Build(),
-                    NullablePeriodWithNull = null,
+                    NullablePeriodWithNull = null
                 });
             }
         }

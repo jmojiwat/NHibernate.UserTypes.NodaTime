@@ -6,57 +6,58 @@ using NHibernate.UserTypes.NodaTime.Test.Infrastructure;
 using NodaTime;
 using Xunit;
 
-namespace NHibernate.UserTypes.NodaTime.Test
+namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class NodaTimeOffsetTest : IClassFixture<DatabaseFixture>
+    [Collection("Database collection")]
+    public class NodaTimeOffsetDateTimeTest
     {
         private readonly ISessionFactory sessionFactory;
 
-        public NodaTimeOffsetTest(DatabaseFixture databaseFixture)
+        public NodaTimeOffsetDateTimeTest(DatabaseFixture databaseFixture)
         {
             sessionFactory = databaseFixture.SessionFactory;
         }
 
         [Theory, NodaTimeAutoData]
-        public void Offset_returns_expected_results(NodaTimeOffset nodaTime)
+        public void NullableOffsetDateTime_returns_expected_results(NodaTimeOffsetDateTime nodaTime)
         {
             PopulateDatabase(sessionFactory, nodaTime);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeOffset>(nodaTime.Id);
+                var sut = session.Load<NodaTimeOffsetDateTime>(nodaTime.Id);
 
-                sut.Offset.Should().BeEquivalentTo(nodaTime.Offset);
+                sut.NullableOffsetDateTime.Should().BeEquivalentTo(nodaTime.NullableOffsetDateTime);
             }
 
             CleanDatabase(sessionFactory);
         }
 
         [Theory, NodaTimeAutoData]
-        public void NullableOffset_returns_expected_results(NodaTimeOffset nodaTime)
+        public void NullableOffsetDateTimeWithNull_returns_expected_results(NodaTimeOffsetDateTime nodaTime)
         {
             PopulateDatabase(sessionFactory, nodaTime);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeOffset>(nodaTime.Id);
+                var sut = session.Load<NodaTimeOffsetDateTime>(nodaTime.Id);
 
-                sut.NullableOffset.Should().BeEquivalentTo(nodaTime.NullableOffset);
+                sut.NullableOffsetDateTimeWithNull.Should().BeEquivalentTo(nodaTime.NullableOffsetDateTimeWithNull);
             }
 
             CleanDatabase(sessionFactory);
         }
 
         [Theory, NodaTimeAutoData]
-        public void NullableOffsetWithNull_returns_expected_results(NodaTimeOffset nodaTime)
+        public void OffsetDateTime_returns_expected_results(NodaTimeOffsetDateTime nodaTime)
         {
             PopulateDatabase(sessionFactory, nodaTime);
 
             using (var session = sessionFactory.OpenSession())
             {
-                var sut = session.Load<NodaTimeOffset>(nodaTime.Id);
+                var sut = session.Load<NodaTimeOffsetDateTime>(nodaTime.Id);
 
-                sut.NullableOffsetWithNull.Should().BeEquivalentTo(nodaTime.NullableOffsetWithNull);
+                sut.OffsetDateTime.Should().BeEquivalentTo(nodaTime.OffsetDateTime);
             }
 
             CleanDatabase(sessionFactory);
@@ -65,11 +66,11 @@ namespace NHibernate.UserTypes.NodaTime.Test
         private static void CleanDatabase(ISessionFactory sessionFactory)
         {
             using var session = sessionFactory.OpenSession();
-            session.Query<NodaTimeOffset>().Delete();
+            session.Query<NodaTimeOffsetDateTime>().Delete();
             session.Flush();
         }
 
-        private static void PopulateDatabase(ISessionFactory sessionFactory, NodaTimeOffset nodaTime)
+        private static void PopulateDatabase(ISessionFactory sessionFactory, NodaTimeOffsetDateTime nodaTime)
         {
             using var session = sessionFactory.OpenSession();
             session.Save(nodaTime);
@@ -87,11 +88,15 @@ namespace NHibernate.UserTypes.NodaTime.Test
         {
             public void Customize(IFixture fixture)
             {
-                fixture.Register(() => new NodaTimeOffset
+                var instant1 = Instant.FromUtc(2016, 5, 6, 1, 2, 3);
+                var instant2 = Instant.FromUtc(2017, 7, 8, 4, 5, 6);
+
+                fixture.Register(() => new NodaTimeOffsetDateTime
                 {
-                    Offset = Offset.FromHours(3),
-                    NullableOffset = Offset.FromHours(1),
-                    NullableOffsetWithNull = null,
+                    OffsetDateTime = new OffsetDateTime(new LocalDateTime(2015, 9, 10, 7, 8, 9), Offset.FromHours(1)),
+                    NullableOffsetDateTime =
+                        new OffsetDateTime(new LocalDateTime(2016, 10, 11, 8, 9, 10), Offset.FromHours(2)),
+                    NullableOffsetDateTimeWithNull = null
                 });
             }
         }
