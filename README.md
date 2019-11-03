@@ -18,11 +18,11 @@ This libarary is a collection of [NHibernate](https://nhibernate.info/) custom v
 
 # Usage
 
-You can either use the custom value types in your ```csharp ClassMapping<>``` by declaring the column(s) and property type, or use the helper methods.
+You can either use the custom value types in your ```ClassMapping<>``` by declaring the column(s) and property type, or use the helper methods.
 
-To use the helper methods, change your mapping class to derive from ```csharp NodaTimeClassMapping<>``` instead of ```csharp ClassMapping<>```.
+To use the helper methods, change your mapping class to derive from ```NodaTimeClassMapping<>``` instead of ```ClassMapping<>```.
 
-The Property method's ```csharp Action<IPropertyMapper> mapping``` parameter you pass into the helper methods will take precedence.
+The Property method's ```Action<IPropertyMapper> mapping``` parameter you pass into the helper methods will take precedence.
 
 ## AnnualDate
 
