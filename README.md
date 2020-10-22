@@ -31,8 +31,8 @@ Property(p => p.AnnualDate,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("AnnualDate_Month"),
-			cm => cm.Name("AnnualDate_Day"));
+			cm => cm.Name("AnnualDate_Month"),	// Int32
+			cm => cm.Name("AnnualDate_Day"));	// Int32
 		m.Type<NodaTimeAnnualDateUserType>();
 	});
 ```
@@ -50,9 +50,9 @@ Property(p => p.DateInterval,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("DateInterval_Start"),
-			cm => cm.Name("DateInterval_End"),
-			cm => cm.Name("DateInterval_Calendar"));
+			cm => cm.Name("DateInterval_Start"),		// Int64
+			cm => cm.Name("DateInterval_End"),			// Int64
+			cm => cm.Name("DateInterval_Calendar"));	// String
 		m.Type<NodaTimeDateIntervalUserType>();
 	});
 ```
@@ -66,7 +66,7 @@ DateIntervalProperty(p => p.DateInterval);
 ## Duration
 
 ```csharp
-Property(p => p.Duration, m => m.Type<NodaTimeDurationUserType>());
+Property(p => p.Duration, m => m.Type<NodaTimeDurationUserType>());	// Int64
 ```
 
 or
@@ -78,7 +78,7 @@ DurationProperty(p => p.Duration);
 ## Instant
 
 ```csharp
-Property(p => p.Instant, m => m.Type<NodaTimeInstantUserType>());
+Property(p => p.Instant, m => m.Type<NodaTimeInstantUserType>()); // Int64
 ```
 
 or 
@@ -94,9 +94,9 @@ Property(p => p.Interval,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("Interval_Interval"),
-			cm => cm.Name("Interval_Start"),
-			cm => cm.Name("Interval_End"));
+			cm => cm.Name("Interval_Interval"),	// Boolean
+			cm => cm.Name("Interval_Start"),	// Int64
+			cm => cm.Name("Interval_End"));		// Int64
 		m.Type<NodaTimeIntervalUserType>();
 	});
 ```
@@ -114,8 +114,8 @@ Property(p => p.LocalDate,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("LocalDate_Date"),
-			cm => cm.Name("LocalDate_Calendar"));
+			cm => cm.Name("LocalDate_Date"),		// Int64
+			cm => cm.Name("LocalDate_Calendar"));	// String
 		m.Type<NodaTimeLocalDateUserType>();
 	});
 ```
@@ -133,8 +133,8 @@ Property(p => p.LocalDateTime,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("LocalDateTime_DateTime"),
-			cm => cm.Name("LocalDateTime_Calendar"));
+			cm => cm.Name("LocalDateTime_DateTime"),	// Int64
+			cm => cm.Name("LocalDateTime_Calendar"));	// String
 		m.Type<NodaTimeLocalDateUserType>();
 	});
 ```
@@ -148,7 +148,7 @@ LocalDateTimeProperty(p => p.LocalDateTime);
 ## LocalTime
 
 ```csharp
-Property(p => p.LocalTime, m => m.Type<NodaTimeLocalTimeUserType>());
+Property(p => p.LocalTime, m => m.Type<NodaTimeLocalTimeUserType>());	// Int64
 ```
 
 or 
@@ -160,7 +160,7 @@ LocalTimeProperty(p => p.LocalTime);
 ## Offset
 
 ```csharp
-Property(p => p.Offset, m => m.Type<NodaTimeOffsetUserType>());
+Property(p => p.Offset, m => m.Type<NodaTimeOffsetUserType>());		// Int64
 ```
 
 or 
@@ -176,9 +176,9 @@ Property(p => p.OffsetDate,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("OffsetDate_Date"),
-			cm => cm.Name("OffsetDate_Offset"),
-			cm => cm.Name("OffsetDate_Calendar"));
+			cm => cm.Name("OffsetDate_Date"),		// Int64
+			cm => cm.Name("OffsetDate_Offset"),		// Int64
+			cm => cm.Name("OffsetDate_Calendar"));	// String
 		m.Type<NodaTimeOffsetDateUserType>();
 	});
 ```
@@ -196,9 +196,9 @@ Property(p => p.OffsetDateTime,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("OffsetDateTime_DateTime"),
-			cm => cm.Name("OffsetDateTime_Offset"),
-			cm => cm.Name("OffsetDateTime_Calendar"));
+			cm => cm.Name("OffsetDateTime_DateTime"),	// Int64
+			cm => cm.Name("OffsetDateTime_Offset"),		// Int64
+			cm => cm.Name("OffsetDateTime_Calendar"));	// String
 		m.Type<NodaTimeOffsetDateTimeUserType>();
 	});
 ```
@@ -216,8 +216,8 @@ Property(p => p.OffsetTime,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("OffsetTime_Time"),
-			cm => cm.Name("OffsetTime_Offset"));
+			cm => cm.Name("OffsetTime_Time"),		// Int64
+			cm => cm.Name("OffsetTime_Offset"));	// Int64
 		m.Type<NodaTimeOffsetTimeUserType>();
 	});
 ```
@@ -235,16 +235,16 @@ Property(p => p.Period,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("Period_Days"),
-			cm => cm.Name("Period_Hours"),
-			cm => cm.Name("Period_Milliseconds"),
-			cm => cm.Name("Period_Minutes"),
-			cm => cm.Name("Period_Months"),
-			cm => cm.Name("Period_Nanoseconds"),
-			cm => cm.Name("Period_Seconds"),
-			cm => cm.Name("Period_Ticks"),
-			cm => cm.Name("Period_Weeks"),
-			cm => cm.Name("Period_Years"));
+			cm => cm.Name("Period_Days"),			// Int32
+			cm => cm.Name("Period_Hours"),			// Int64
+			cm => cm.Name("Period_Milliseconds"),	// Int64
+			cm => cm.Name("Period_Minutes"),		// Int64
+			cm => cm.Name("Period_Months"),			// Int32
+			cm => cm.Name("Period_Nanoseconds"),	// Int64
+			cm => cm.Name("Period_Seconds"),		// Int64
+			cm => cm.Name("Period_Ticks"),			// Int64
+			cm => cm.Name("Period_Weeks"),			// Int32
+			cm => cm.Name("Period_Years"));			// Int32
 		m.Type<NodaTimePeriodUserType>();
 	});
 ```
@@ -262,9 +262,9 @@ Property(p => p.ZonedDateTime,
 	m =>
 	{
 		m.Columns(
-			cm => cm.Name("ZonedDateTime_DateTime"),
-			cm => cm.Name("ZonedDateTime_Zone"),
-			cm => cm.Name("ZonedDateTime_Calendar"));
+			cm => cm.Name("ZonedDateTime_DateTime"),	// Int64
+			cm => cm.Name("ZonedDateTime_Zone"),		// String
+			cm => cm.Name("ZonedDateTime_Calendar"));	// String
 		m.Type<NodaTimeZonedDateTimeUserType>();
 	});
 ```
