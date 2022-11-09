@@ -9,7 +9,7 @@ using NHibernate.Tool.hbm2ddl;
 
 namespace NHibernate.UserTypes.NodaTime.Test.WithMappingHelpers
 {
-    public class MappingHelpersDatabaseFixture : IDisposable
+    public sealed class MappingHelpersDatabaseFixture : IDisposable
     {
         public ISessionFactory SessionFactory { get; }
 
@@ -59,6 +59,12 @@ namespace NHibernate.UserTypes.NodaTime.Test.WithMappingHelpers
             return configuration;
         }
 
+        /*
+        public void Dispose()
+        {
+            SessionFactory?.Dispose();
+        }
+    */
         public void Dispose()
         {
             SessionFactory?.Dispose();

@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="nhibernate" Version="5.2.6" />
-    <PackageReference Include="nodatime" Version="2.4.7" />
+    <PackageReference Include="nhibernate" Version="5.3.14" />
+    <PackageReference Include="nodatime" Version="3.1.5" />
   </ItemGroup>
 
 </Project>

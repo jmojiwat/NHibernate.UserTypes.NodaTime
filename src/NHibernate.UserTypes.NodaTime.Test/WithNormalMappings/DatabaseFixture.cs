@@ -9,7 +9,7 @@ using NHibernate.Tool.hbm2ddl;
 
 namespace NHibernate.UserTypes.NodaTime.Test.WithNormalMappings
 {
-    public class DatabaseFixture : IDisposable
+    public sealed class DatabaseFixture : IDisposable
     {
         public ISessionFactory SessionFactory { get; }
 
