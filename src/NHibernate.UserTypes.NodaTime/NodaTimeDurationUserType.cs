@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Data.Common;
+using NHibernate;
 using NHibernate.Engine;
 using NHibernate.SqlTypes;
 using NodaTime;
+using NodaTime.Text;
 
 namespace NHibernate.UserTypes.NodaTime
 {
@@ -14,53 +16,52 @@ namespace NHibernate.UserTypes.NodaTime
             {
                 return true;
             }
-            if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+            if (x is null || y is null)
             {
                 return false;
             }
 
-            var lhs = (Duration) x;
-            var rhs = (Duration) y;
+            var lhs = (Duration)x;
+            var rhs = (Duration)y;
 
             return lhs.Equals(rhs);
         }
 
-        public int GetHashCode(object x) => ((Duration) x).GetHashCode();
+        public int GetHashCode(object x) => ((Duration)x).GetHashCode();
 
         public object NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
         {
-            var nanoseconds = (long?) NHibernateUtil.Int64.NullSafeGet(rs, names[0], session);
+            var format = (string)NHibernateUtil.String.NullSafeGet(rs, names[0], session, owner);
+            if (format == null)
+            {
+                return null;
+            }
 
-            return nanoseconds == null ? (object) null : Duration.FromNanoseconds(nanoseconds.Value);
+            var parsed = DurationPattern.Roundtrip.Parse(format);
+
+            return parsed.Success 
+                ? parsed.Value 
+                : (object)null;
         }
 
         public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
         {
-            var duration = (Duration?) value;
-            NHibernateUtil.Int64.NullSafeSet(cmd, duration?.ToInt64Nanoseconds(), index, session);
+            var format = value is Duration duration
+                ? DurationPattern.Roundtrip.Format(duration)
+                : null;
+
+            NHibernateUtil.String.NullSafeSet(cmd, format, index, session);
         }
 
-        public object DeepCopy(object value)
-        {
-            return value;
-        }
+        public object DeepCopy(object value) => value;
 
-        public object Replace(object original, object target, object owner)
-        {
-            return DeepCopy(original);
-        }
+        public object Replace(object original, object target, object owner) => DeepCopy(original);
 
-        public object Assemble(object cached, object owner)
-        {
-            return DeepCopy(cached);
-        }
+        public object Assemble(object cached, object owner) => DeepCopy(cached);
 
-        public object Disassemble(object value)
-        {
-            return DeepCopy(value);
-        }
+        public object Disassemble(object value) => DeepCopy(value);
 
-        public SqlType[] SqlTypes => new[] { SqlTypeFactory.Int64 };
+        public SqlType[] SqlTypes => new[] { SqlTypeFactory.GetString(255) };
         public System.Type ReturnedType => typeof(Duration);
         public bool IsMutable => false;
     }

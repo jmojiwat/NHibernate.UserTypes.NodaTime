@@ -7,11 +7,22 @@ namespace NHibernate.UserTypes.NodaTime
     {
         public static string GetPropertyName<TEntity, TProperty>(Expression<Func<TEntity, TProperty>> expression)
         {
+            return expression.Body.NodeType switch
+            {
+                ExpressionType.MemberAccess => ((MemberExpression)expression.Body).Member.Name,
+                ExpressionType.Convert when expression.Body.Type == typeof(TProperty) =>
+                    ((MemberExpression)((UnaryExpression)expression.Body).Operand).Member.Name,
+                _ => throw new ArgumentException(
+                    $"Invalid expression type: Expected ExpressionType.MemberAccess, Found {(object)expression.Body.NodeType}",
+                    nameof(expression))
+            };
+            /*
             if (expression.Body.NodeType == ExpressionType.MemberAccess)
                 return ((MemberExpression) expression.Body).Member.Name;
             if (expression.Body.NodeType == ExpressionType.Convert && expression.Body.Type == typeof (TProperty))
                 return ((MemberExpression) ((UnaryExpression) expression.Body).Operand).Member.Name;
             throw new ArgumentException($"Invalid expression type: Expected ExpressionType.MemberAccess, Found {(object) expression.Body.NodeType}", nameof (expression));
+        */
         }
     }
 }

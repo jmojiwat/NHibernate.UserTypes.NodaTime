@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Data.Common;
 using NHibernate.Engine;
 using NHibernate.Type;
 using NodaTime;
+using NodaTime.Text;
 
 namespace NHibernate.UserTypes.NodaTime
 {
@@ -11,17 +12,12 @@ namespace NHibernate.UserTypes.NodaTime
         public object GetPropertyValue(object component, int property)
         {
             var dateInterval = (DateInterval) component;
-            switch (property)
+            return property switch
             {
-                case 0:
-                    return dateInterval.Start;
-                case 1:
-                    return dateInterval.End;
-                case 2:
-                    return dateInterval.Calendar;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(property));
-            }
+                0 => dateInterval.Start,
+                1 => dateInterval.End,
+                _ => throw new ArgumentOutOfRangeException(nameof(property))
+            };
         }
 
         public void SetPropertyValue(object component, int property, object value)
@@ -36,7 +32,7 @@ namespace NHibernate.UserTypes.NodaTime
                 return true;
             }
 
-            if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+            if (x is null || y is null)
             {
                 return false;
             }
@@ -51,37 +47,49 @@ namespace NHibernate.UserTypes.NodaTime
 
         public object NullSafeGet(DbDataReader dr, string[] names, ISessionImplementor session, object owner)
         {
-            var startTicks = (long?) NHibernateUtil.Int64.NullSafeGet(dr, names[0], session, owner);
-            var endTicks = (long?) NHibernateUtil.Int64.NullSafeGet(dr, names[1], session, owner);
-            var calendarId = (string) NHibernateUtil.String.NullSafeGet(dr, names[2], session, owner);
+            var startFormat = (string)NHibernateUtil.String.NullSafeGet(dr, names[0], session, owner);
+            var endFormat = (string)NHibernateUtil.String.NullSafeGet(dr, names[1], session, owner);
 
-            if (startTicks == null || endTicks == null || string.IsNullOrEmpty(calendarId))
+            if (startFormat == null || endFormat == null)
             {
                 return null;
             }
-            return new DateInterval(
-                Instant.FromUnixTimeTicks(startTicks.Value).InUtc().Date.WithCalendar(CalendarSystem.ForId(calendarId)),
-                Instant.FromUnixTimeTicks(endTicks.Value).InUtc().Date.WithCalendar(CalendarSystem.ForId(calendarId)));
+
+            var startParsed = LocalDatePattern.FullRoundtrip.Parse(startFormat);
+            var startLocalDate = startParsed.Success ? startParsed.Value : LocalDate.MinIsoValue;
+
+            var endParsed = LocalDatePattern.FullRoundtrip.Parse(endFormat);
+            var endLocalDate = endParsed.Success ? endParsed.Value : LocalDate.MinIsoValue;
+
+            return new DateInterval(startLocalDate, endLocalDate);
         }
 
         public void NullSafeSet(DbCommand cmd, object value, int index, bool[] settable, ISessionImplementor session)
         {
-            var dateInterval = (DateInterval) value;
-            var startTicks = dateInterval?.Start.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant().ToUnixTimeTicks();
-            var endTicks = dateInterval?.End.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant().ToUnixTimeTicks();
-            var calendarId = dateInterval?.Calendar.Id;
+            if (value is DateInterval dateInterval)
+            {
+                var startFormat = LocalDatePattern.FullRoundtrip.Format(dateInterval.Start);
+                var endFormat = LocalDatePattern.FullRoundtrip.Format(dateInterval.End);
 
-            if (settable[0])
-            {
-                NHibernateUtil.Int64.NullSafeSet(cmd, startTicks, index++, session);
+                if (settable[0])
+                {
+                    NHibernateUtil.String.NullSafeSet(cmd, startFormat, index, session);
+                }
+                if (settable[1])
+                {
+                    NHibernateUtil.String.NullSafeSet(cmd, endFormat, index + 1, session);
+                }
             }
-            if (settable[1])
+            else
             {
-                NHibernateUtil.Int64.NullSafeSet(cmd, endTicks, index++, session);
-            }
-            if (settable[2])
-            {
-                NHibernateUtil.String.NullSafeSet(cmd, calendarId, index, session);
+                if (settable[0])
+                {
+                    NHibernateUtil.String.NullSafeSet(cmd, null, index, session);
+                }
+                if (settable[1])
+                {
+                    NHibernateUtil.String.NullSafeSet(cmd, null, index + 1, session);
+                }
             }
         }
 
@@ -93,8 +101,8 @@ namespace NHibernate.UserTypes.NodaTime
 
         public object Replace(object original, object target, ISessionImplementor session, object owner) => original;
 
-        public string[] PropertyNames => new[] {"Start", "End", "Calendar"};
-        public IType[] PropertyTypes => new IType[] {NHibernateUtil.Int64, NHibernateUtil.Int64, NHibernateUtil.String};
+        public string[] PropertyNames => new[] {"Start", "End" };
+        public IType[] PropertyTypes => new IType[] {NHibernateUtil.String, NHibernateUtil.String };
         public System.Type ReturnedClass => typeof(DateInterval);
         public bool IsMutable => false;
     }

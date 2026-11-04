@@ -1,0 +1,10 @@
+﻿using Xunit;
+
+namespace NHibernate.UserTypes.NodaTime.Tests.WithMappingHelpers
+{
+    [CollectionDefinition("Database with mapping helpers collection")]
+    public class MappingHelpersDatabaseFixtureCollection : ICollectionFixture<MappingHelpersDatabaseFixture>
+    {
+
+    }
+}

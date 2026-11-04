@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Data.Common;
 using NHibernate.Engine;
 using NHibernate.Type;
 using NodaTime;
+using NodaTime.Text;
 
 namespace NHibernate.UserTypes.NodaTime
 {
@@ -11,17 +12,12 @@ namespace NHibernate.UserTypes.NodaTime
         public object GetPropertyValue(object component, int property)
         {
             var interval = (Interval)component;
-            switch (property)
+            return property switch
             {
-                case 0:
-                    return true;
-                case 1:
-                    return interval.HasStart ? interval.Start : (object) null;
-                case 2:
-                    return interval.HasEnd ? interval.End : (object) null;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(property));
-            }
+                0 => interval.HasStart ? interval.Start : (object)null,
+                1 => interval.HasEnd ? interval.End : (object)null,
+                _ => throw new ArgumentOutOfRangeException(nameof(property))
+            };
         }
 
         public void SetPropertyValue(object component, int property, object value)
@@ -36,7 +32,7 @@ namespace NHibernate.UserTypes.NodaTime
                 return true;
             }
 
-            if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+            if (x is null || y is null)
             {
                 return false;
             }
@@ -51,41 +47,63 @@ namespace NHibernate.UserTypes.NodaTime
 
         public object NullSafeGet(DbDataReader dr, string[] names, ISessionImplementor session, object owner)
         {
-            var interval = (bool)NHibernateUtil.Boolean.NullSafeGet(dr, names[0], session, owner);
-            var startTicks = (long?)NHibernateUtil.Int64.NullSafeGet(dr, names[1], session, owner);
-            var endTicks = (long?)NHibernateUtil.Int64.NullSafeGet(dr, names[2], session, owner);
+            var startFormat = (string)NHibernateUtil.String.NullSafeGet(dr, names[0], session, owner);
+            var endFormat = (string)NHibernateUtil.String.NullSafeGet(dr, names[1], session, owner);
 
-            var start = startTicks.HasValue ? Instant.FromUnixTimeTicks(startTicks.Value) : (Instant?) null;
-            var end = endTicks.HasValue ? Instant.FromUnixTimeTicks(endTicks.Value) : (Instant?) null;
-            
-            if(interval)
-            {
-                return new Interval(start, end);
-            }
-            else
+            if (startFormat == null && endFormat == null)
             {
                 return null;
             }
+
+            Instant? startInstant = null;
+            if (!string.IsNullOrEmpty(startFormat))
+            {
+                var startParsed = InstantPattern.General.Parse(startFormat);
+                if (startParsed.Success)
+                {
+                    startInstant = startParsed.Value;
+                }
+            }
+
+            Instant? endInstant = null;
+            if (!string.IsNullOrEmpty(endFormat))
+            {
+                var endParsed = InstantPattern.General.Parse(endFormat);
+                if (endParsed.Success)
+                {
+                    endInstant = endParsed.Value;
+                }
+            }
+
+            return new Interval(startInstant, endInstant);
         }
 
         public void NullSafeSet(DbCommand cmd, object value, int index, bool[] settable, ISessionImplementor session)
         {
-            var interval = (Interval?)value;
-            var start = interval.HasValue && (bool) interval?.HasStart ? interval?.Start.ToUnixTimeTicks() : null;
-            var end = interval.HasValue && (bool) interval?.HasEnd ? interval?.End.ToUnixTimeTicks() : null;
+            if (value is Interval interval)
+            {
+                var startFormat = interval.HasStart ? InstantPattern.General.Format(interval.Start) : string.Empty;
+                var endFormat = interval.HasEnd ? InstantPattern.General.Format(interval.End) : string.Empty;
 
-            if (settable[0])
-            {
-                NHibernateUtil.Boolean.NullSafeSet(cmd, interval.HasValue, index++, session);
+                if (settable[0])
+                {
+                    NHibernateUtil.String.NullSafeSet(cmd, startFormat, index, session);
+                }
+                if (settable[1])
+                {
+                    NHibernateUtil.String.NullSafeSet(cmd, endFormat, index + 1, session);
+                }
             }
-            if (settable[1])
+            else
             {
-                NHibernateUtil.Int64.NullSafeSet(cmd, start, index++, session);
-            }
-
-            if (settable[2])
-            {
-                NHibernateUtil.Int64.NullSafeSet(cmd, end, index, session);
+                if (settable[0])
+                {
+                    NHibernateUtil.String.NullSafeSet(cmd, null, index, session);
+                }
+                if (settable[1])
+                {
+                    NHibernateUtil.String.NullSafeSet(cmd, null, index + 1, session);
+                }
             }
         }
 
@@ -97,8 +115,8 @@ namespace NHibernate.UserTypes.NodaTime
 
         public object Replace(object original, object target, ISessionImplementor session, object owner) => original;
 
-        public string[] PropertyNames => new[] {"Interval", "Start", "End"};
-        public IType[] PropertyTypes => new IType[] {NHibernateUtil.Boolean, NHibernateUtil.Int64, NHibernateUtil.Int64};
+        public string[] PropertyNames => new[] { "Start", "End" };
+        public IType[] PropertyTypes => new IType[] { NHibernateUtil.String, NHibernateUtil.String };
         public System.Type ReturnedClass => typeof(Interval);
         public bool IsMutable => false;
     }

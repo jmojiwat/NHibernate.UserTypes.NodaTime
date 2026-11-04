@@ -1,7 +1,10 @@
-﻿using System.Data.Common;
+using System;
+using System.Data.Common;
+using NHibernate;
 using NHibernate.Engine;
 using NHibernate.SqlTypes;
 using NodaTime;
+using NodaTime.Text;
 
 namespace NHibernate.UserTypes.NodaTime
 {
@@ -14,29 +17,41 @@ namespace NHibernate.UserTypes.NodaTime
                 return true;
             }
 
-            if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+            if (x is null || y is null)
             {
                 return false;
             }
 
-            var lhs = (Offset) x;
-            var rhs = (Offset) y;
+            var lhs = (Offset)x;
+            var rhs = (Offset)y;
 
             return lhs.Equals(rhs);
         }
 
-        public int GetHashCode(object x) => ((Offset) x).GetHashCode();
+        public int GetHashCode(object x) => ((Offset)x).GetHashCode();
 
         public object NullSafeGet(DbDataReader rs, string[] names, ISessionImplementor session, object owner)
         {
-            var nanoseconds = (long?) NHibernateUtil.Int64.NullSafeGet(rs, names[0], session, owner);
-            return nanoseconds == null ? (Offset?) null : Offset.FromNanoseconds(nanoseconds.Value);
+            var format = (string)NHibernateUtil.String.NullSafeGet(rs, names[0], session, owner);
+            if (format == null)
+            {
+                return null;
+            }
+
+            var parsed = OffsetPattern.GeneralInvariant.Parse(format);
+
+            return parsed.Success
+                ? parsed.Value
+                : (object)null;
         }
 
         public void NullSafeSet(DbCommand cmd, object value, int index, ISessionImplementor session)
         {
-            var offset = (Offset?) value;
-            NHibernateUtil.Int64.NullSafeSet(cmd, offset?.Nanoseconds, index, session);
+            var format = value is Offset offset
+                ? OffsetPattern.GeneralInvariant.Format(offset)
+                : null;
+
+            NHibernateUtil.String.NullSafeSet(cmd, format, index, session);
         }
 
         public object DeepCopy(object value) => value;
@@ -47,7 +62,7 @@ namespace NHibernate.UserTypes.NodaTime
 
         public object Disassemble(object value) => value;
 
-        public SqlType[] SqlTypes => new[] {SqlTypeFactory.Int64};
+        public SqlType[] SqlTypes => new SqlType[] { SqlTypeFactory.GetString(255) };
         public System.Type ReturnedType => typeof(Offset);
         public bool IsMutable => false;
     }

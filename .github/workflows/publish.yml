@@ -1,0 +1,94 @@
+name: Publish to NuGet
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package Version to publish (e.g. 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Determine Package Version
+        id: get_version
+        shell: pwsh
+        run: |
+          if ('${{ github.event_name }}' -eq 'workflow_dispatch') {
+            $ver = '${{ inputs.version }}'.Trim().TrimStart('v')
+          } else {
+            $ver = '${{ github.ref_name }}'.Trim().TrimStart('v')
+          }
+          Write-Host "Determined Version: $ver"
+          "version=$ver" >> $env:GITHUB_OUTPUT
+
+      - name: Start LocalDB & Create Test Databases
+        shell: pwsh
+        run: |
+          sqllocaldb start mssqllocaldb
+          $conn = New-Object System.Data.SqlClient.SqlConnection('Data Source=(localdb)\mssqllocaldb;Initial Catalog=master;Integrated Security=True;')
+          $conn.Open()
+          $cmd = $conn.CreateCommand()
+          $cmd.CommandText = @"
+          IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'nodatime') CREATE DATABASE nodatime;
+          IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'nodatimemappinghelpers') CREATE DATABASE nodatimemappinghelpers;
+          "@
+          $null = $cmd.ExecuteNonQuery()
+          $conn.Close()
+          Write-Host "LocalDB test databases ensured."
+
+      - name: Restore dependencies
+        run: dotnet restore src/NHibernate.UserTypes.NodaTime.slnx
+
+      - name: Build solution
+        run: dotnet build src/NHibernate.UserTypes.NodaTime.slnx -c Release --no-restore
+
+      - name: Run tests (quality gate)
+        run: dotnet test src/NHibernate.UserTypes.NodaTime.slnx -c Release --no-build
+
+      - name: Pack NuGet package
+        run: dotnet pack src/NHibernate.UserTypes.NodaTime/NHibernate.UserTypes.NodaTime.csproj -c Release -p:PackageVersion=${{ steps.get_version.outputs.version }} -o ./artifacts
+
+      - name: Authenticate with NuGet (OIDC Trusted Publishing)
+        if: ${{ !secrets.NUGET_API_KEY }}
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER || 'jmojiwat' }}
+
+      - name: Push to NuGet.org
+        env:
+          SECRET_KEY: ${{ secrets.NUGET_API_KEY }}
+          OIDC_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        shell: pwsh
+        run: |
+          $key = if (![string]::IsNullOrWhiteSpace($env:SECRET_KEY)) { $env:SECRET_KEY } else { $env:OIDC_KEY }
+          if ([string]::IsNullOrWhiteSpace($key)) {
+            Write-Error "No authentication found! Please configure Trusted Publishing on NuGet.org or provide a NUGET_API_KEY secret."
+            exit 1
+          }
+          dotnet nuget push ./artifacts/*.nupkg --api-key $key --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Attach package to GitHub Release
+        if: github.event_name == 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          gh release upload ${{ github.ref_name }} (Get-Item ./artifacts/*.nupkg).FullName --clobber

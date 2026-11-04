@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="NHibernate.UserTypes.NodaTime.Tests/NHibernate.UserTypes.NodaTime.Tests.csproj" />
+  <Project Path="NHibernate.UserTypes.NodaTime/NHibernate.UserTypes.NodaTime.csproj" />
+</Solution>

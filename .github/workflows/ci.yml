@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Start LocalDB & Create Test Databases
+        shell: pwsh
+        run: |
+          sqllocaldb start mssqllocaldb
+          $conn = New-Object System.Data.SqlClient.SqlConnection('Data Source=(localdb)\mssqllocaldb;Initial Catalog=master;Integrated Security=True;')
+          $conn.Open()
+          $cmd = $conn.CreateCommand()
+          $cmd.CommandText = @"
+          IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'nodatime') CREATE DATABASE nodatime;
+          IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'nodatimemappinghelpers') CREATE DATABASE nodatimemappinghelpers;
+          "@
+          $null = $cmd.ExecuteNonQuery()
+          $conn.Close()
+          Write-Host "LocalDB test databases ensured."
+
+      - name: Restore dependencies
+        run: dotnet restore src/NHibernate.UserTypes.NodaTime.slnx
+
+      - name: Build solution
+        run: dotnet build src/NHibernate.UserTypes.NodaTime.slnx -c Release --no-restore
+
+      - name: Run tests
+        run: dotnet test src/NHibernate.UserTypes.NodaTime.slnx -c Release --no-build
+
+      - name: Pack NuGet package
+        run: dotnet pack src/NHibernate.UserTypes.NodaTime/NHibernate.UserTypes.NodaTime.csproj -c Release --no-build -o ./artifacts
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts/*.nupkg

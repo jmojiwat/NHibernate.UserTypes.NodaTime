@@ -1,12 +1,25 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <PackageId>NHibernate.UserTypes.NodaTime</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Jacob Mojiwat</Authors>
+    <Description>NHibernate custom user types and mapping helpers for NodaTime types.</Description>
+    <PackageTags>nhibernate;nodatime;usertype;orm</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/jmojiwat/NHibernate.UserTypes.NodaTime</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="nhibernate" Version="5.3.14" />
-    <PackageReference Include="nodatime" Version="3.1.5" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NHibernate" Version="5.4.7" />
+    <PackageReference Include="NodaTime" Version="3.1.8" />
   </ItemGroup>
 
 </Project>
