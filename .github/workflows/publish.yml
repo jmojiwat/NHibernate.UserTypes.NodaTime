@@ -66,24 +66,14 @@ jobs:
         run: dotnet pack src/NHibernate.UserTypes.NodaTime/NHibernate.UserTypes.NodaTime.csproj -c Release -p:PackageVersion=${{ steps.get_version.outputs.version }} -o ./artifacts
 
       - name: Authenticate with NuGet (OIDC Trusted Publishing)
-        if: ${{ !secrets.NUGET_API_KEY }}
         id: login
         uses: NuGet/login@v1
         with:
-          user: ${{ vars.NUGET_USER || 'jmojiwat' }}
+          user: jmojiwat
 
       - name: Push to NuGet.org
-        env:
-          SECRET_KEY: ${{ secrets.NUGET_API_KEY }}
-          OIDC_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         shell: pwsh
-        run: |
-          $key = if (![string]::IsNullOrWhiteSpace($env:SECRET_KEY)) { $env:SECRET_KEY } else { $env:OIDC_KEY }
-          if ([string]::IsNullOrWhiteSpace($key)) {
-            Write-Error "No authentication found! Please configure Trusted Publishing on NuGet.org or provide a NUGET_API_KEY secret."
-            exit 1
-          }
-          dotnet nuget push ./artifacts/*.nupkg --api-key $key --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Attach package to GitHub Release
         if: github.event_name == 'release'
