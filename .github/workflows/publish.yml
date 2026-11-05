@@ -73,7 +73,13 @@ jobs:
 
       - name: Push to NuGet.org
         shell: pwsh
-        run: dotnet nuget push ./artifacts/*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: |
+          $packages = Get-ChildItem -Path artifacts -Filter *.nupkg
+          if (-not $packages) { Write-Error "No .nupkg found in artifacts"; exit 1 }
+          foreach ($pkg in $packages) {
+            dotnet nuget push $pkg.FullName --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
 
       - name: Attach package to GitHub Release
         if: github.event_name == 'release'
